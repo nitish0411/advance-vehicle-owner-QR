@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoGuard QR • Smart Vehicle QR & Emergency Contact System</title>
+  <meta name="description" content="Next-Generation Privacy-First Smart Vehicle QR System for Wrong Parking, Vehicle Hazards, and Family Emergency Contact without exposing personal phone numbers.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS for maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Audio Alert Synthesizer container -->
+  <div id="audio-indicator" class="audio-pulse hidden" title="Audio Alerts Active">
+    <i data-lucide="volume-2"></i>
+  </div>
+
+  <!-- Global Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo-badge">
+          <div class="logo-emblem-box">
+            <i data-lucide="shield-alert" class="logo-shield-icon"></i>
+          </div>
+          <div class="logo-brand-text">
+            <span class="logo-main-title">AUTOGUARD</span>
+            <span class="logo-badge-pill">ADVANCE QR</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-view="dashboard" id="tab-dashboard" role="tab">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Owner App</span>
+        </button>
+        <button class="nav-tab" data-view="activation" id="tab-activation" role="tab">
+          <i data-lucide="sparkles"></i>
+          <span>Activate QR Plan</span>
+          <span class="badge badge-accent">Self-Setup</span>
+        </button>
+        <button class="nav-tab" data-view="scanner" id="tab-scanner" role="tab">
+          <i data-lucide="qr-code"></i>
+          <span>Scanner Portal</span>
+          <span class="badge pulse-badge">Bystander</span>
+        </button>
+        <button class="nav-tab" data-view="studio" id="tab-studio" role="tab">
+          <i data-lucide="printer"></i>
+          <span>Sticker Studio</span>
+        </button>
+        <button class="nav-tab" data-view="family" id="tab-family" role="tab">
+          <i data-lucide="users"></i>
+          <span>Family & SOS</span>
+        </button>
+        <button class="nav-tab" data-view="admin" id="tab-admin" role="tab">
+          <i data-lucide="shield-check"></i>
+          <span>Admin Portal</span>
+          <span class="badge badge-admin">Master</span>
+        </button>
+      </nav>
+
+      <!-- Quick Action Controls -->
+      <div class="header-actions">
+        <button class="btn btn-outline-sos" id="btn-quick-sos-sim" title="Simulate Emergency Alert">
+          <i data-lucide="siren"></i>
+          <span class="btn-text">Simulate SOS Alert</span>
+        </button>
+        <div class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Live Toast & Notification Banner Overlay -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Application Body -->
+  <main class="app-content">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: OWNER DASHBOARD -->
+    <!-- ========================================================================= -->
+    <section id="view-dashboard" class="view-panel active">
+      <!-- Status & Stats Banner -->
+      <div class="dashboard-hero">
+        <div class="hero-card hero-privacy">
+          <div class="hero-card-header">
+            <div class="privacy-badge">
+              <i data-lucide="lock"></i>
+              <span>100% Privacy Shield Active</span>
+            </div>
+            <span class="status-indicator online">System Guarded</span>
+          </div>
+          <h2 class="hero-title">Your vehicle is protected without exposing your number</h2>
+          <p class="hero-desc">When people scan your windshield sticker, they contact you via anonymous proxy calling, encrypted chat, and emergency family SOS alerts.</p>
+          <div class="quick-status-row">
+            <span class="status-label">Current Parking Status:</span>
+            <div class="status-pill-group" id="owner-status-selector">
+              <button class="status-pill active" data-status="available">🟢 Normal Available</button>
+              <button class="status-pill" data-status="5min">⏱️ Back in 5 Mins</button>
+              <button class="status-pill" data-status="valet">🔑 Valet / Service</button>
+              <button class="status-pill" data-status="dnd">🌙 Do Not Disturb (SOS Only)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metric-cards-grid">
+          <div class="metric-card">
+            <div class="metric-icon bg-blue">
+              <i data-lucide="car"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Registered Vehicles</span>
+              <span class="metric-value" id="stat-cars-count">4 Vehicles</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon bg-amber">
+              <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Recent Alerts</span>
+              <span class="metric-value" id="stat-alerts-count">3 Inbound</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon bg-emerald">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Family SOS Circle</span>
+              <span class="metric-value" id="stat-family-count">3 Contacts</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon bg-purple">
+              <i data-lucide="shield-check"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Number Masking</span>
+              <span class="metric-value">Encrypted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Two-Column Layout -->
+      <div class="dashboard-grid">
+        <!-- Left Column: Vehicle Management -->
+        <div class="dashboard-col">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title-wrap">
+                <i data-lucide="car-front"></i>
+                <h3>My Registered Vehicles</h3>
+              </div>
+              <button class="btn btn-sm btn-primary" id="btn-add-vehicle">
+                <i data-lucide="plus"></i>
+                <span>Add Vehicle</span>
+              </button>
+            </div>
+
+            <div class="vehicle-list" id="vehicle-cards-list">
+              <!-- Dynamically populated vehicle cards -->
+            </div>
+          </div>
+
+          <!-- Quick Sticker Preview & Print Card -->
+          <div class="section-card sticker-promo-card">
+            <div class="sticker-promo-content">
+              <div class="sticker-promo-info">
+                <h4><i data-lucide="sparkles"></i> Need New Windshield Stickers?</h4>
+                <p>Generate high-resolution printable QR stickers with custom styling, reflective borders, and clear scan instructions.</p>
+                <button class="btn btn-sm btn-gradient" id="btn-goto-studio">
+                  <i data-lucide="printer"></i>
+                  <span>Open Sticker Studio</span>
+                </button>
+              </div>
+              <div class="sticker-mini-preview" id="mini-qr-preview">
+                <!-- Mini visual preview of active QR -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Live Inbound Alerts Feed & Actions -->
+        <div class="dashboard-col">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-title-wrap">
+                <i data-lucide="inbox"></i>
+                <h3>Inbound Scan Alerts & Events</h3>
+                <span class="badge badge-pulse" id="live-alert-badge">Live Feed</span>
+              </div>
+              <div class="feed-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="parking">Wrong Parking</button>
+                <button class="filter-btn" data-filter="hazard">Hazards</button>
+                <button class="filter-btn" data-filter="sos">SOS Emergencies</button>
+              </div>
+            </div>
+
+            <!-- Inbound Alerts Stream List -->
+            <div class="alerts-feed" id="alerts-feed-list">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Nearby Roadside Services Radar Card -->
+          <div class="section-card nearby-owner-radar">
+            <div class="section-header">
+              <div class="section-title-wrap">
+                <i data-lucide="navigation"></i>
+                <h3>Nearby Roadside & Parking Radar</h3>
+                <span class="badge badge-accent">Live GPS</span>
+              </div>
+              <div class="radar-view-modes">
+                <button type="button" class="btn-radar-view active" data-mode="list" id="btn-owner-radar-list" title="List View">
+                  <i data-lucide="list"></i> List
+                </button>
+                <button type="button" class="btn-radar-view" data-mode="map" id="btn-owner-radar-map" title="Interactive Map View">
+                  <i data-lucide="map"></i> Live Map
+                </button>
+              </div>
+            </div>
+
+            <!-- GPS Live Origin Bar -->
+            <div class="gps-origin-bar">
+              <div class="gps-origin-info">
+                <span class="gps-pulse-icon">📍</span>
+                <div class="gps-text-wrap">
+                  <div class="gps-origin-title" id="owner-gps-origin-label">Vehicle Parked GPS Active</div>
+                  <div class="gps-origin-sub" id="owner-gps-origin-coords">28.6139° N, 77.2090° E • Nearest First</div>
+                </div>
+              </div>
+              <button type="button" class="btn-gps-refresh" id="btn-owner-refresh-gps" title="Re-sync device GPS location">
+                <i data-lucide="refresh-cw"></i> <span>Use My GPS</span>
+              </button>
+            </div>
+
+            <div class="radar-filter-chips owner-radar-chips">
+              <button type="button" class="radar-chip active" data-type="all">All</button>
+              <button type="button" class="radar-chip" data-type="parking">🅿️ Parking</button>
+              <button type="button" class="radar-chip" data-type="hospital">🏥 Hospital</button>
+              <button type="button" class="radar-chip" data-type="fuel">⛽ Fuel/EV</button>
+              <button type="button" class="radar-chip" data-type="mechanic">🔧 Repair</button>
+            </div>
+
+            <!-- Owner Live Map -->
+            <div id="owner-radar-live-map" class="radar-map-container hidden"></div>
+
+            <div class="nearby-places-stream" id="owner-nearby-places-list">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW: VEHICLE OWNER ACTIVATION & ONBOARDING WIZARD -->
+    <!-- ========================================================================= -->
+    <section id="view-activation" class="view-panel">
+      <div class="activation-layout">
+        <!-- Wizard Header Banner -->
+        <div class="activation-hero">
+          <div class="act-hero-badge">
+            <i data-lucide="sparkles"></i>
+            <span>Self-Setup Portal</span>
+          </div>
+          <h2>Activate AutoGuard QR & Register Vehicle Details</h2>
+          <p>Complete this 4-step onboarding form after purchasing your Smart QR kit to link your vehicle, emergency family network, and digital document locker.</p>
+        </div>
+
+        <!-- Wizard Step Nodes Progress Bar -->
+        <div class="wizard-stepper">
+          <button type="button" class="wizard-step-node active" data-step="1">
+            <span class="step-num">1</span>
+            <span class="step-label">QR Serial Key</span>
+          </button>
+          <div class="step-divider"></div>
+          <button type="button" class="wizard-step-node" data-step="2">
+            <span class="step-num">2</span>
+            <span class="step-label">Vehicle Details</span>
+          </button>
+          <div class="step-divider"></div>
+          <button type="button" class="wizard-step-node" data-step="3">
+            <span class="step-num">3</span>
+            <span class="step-label">Owner & Geotag</span>
+          </button>
+          <div class="step-divider"></div>
+          <button type="button" class="wizard-step-node" data-step="4">
+            <span class="step-num">4</span>
+            <span class="step-label">Family & Locker</span>
+          </button>
+        </div>
+
+        <!-- Wizard Content Cards Container -->
+        <div class="wizard-card-container">
+          <!-- Step 1: Serial Code & Plan -->
+          <div class="wizard-step-panel active" id="wizard-step-1">
+            <div class="wizard-panel-header">
+              <i data-lucide="qr-code"></i>
+              <div>
+                <h3>Step 1: Link Your AutoGuard QR Kit</h3>
+                <p>Enter the 16-character alphanumeric serial key printed on your physical sticker packaging.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="act-qr-serial">QR Kit Serial Key / Activation Code</label>
+                <div style="display:flex; gap: 0.5rem;">
+                  <input type="text" id="act-qr-serial" class="form-control" placeholder="e.g. AG-2026-PRO-9982" value="AG-2026-PRO-9982" required>
+                  <button type="button" class="btn btn-outline" id="btn-scan-kit-code" title="Simulate scanning printed packaging code">
+                    <i data-lucide="qr-code"></i> Scan Code
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="act-plan-select">Select Purchased Protection Plan</label>
+                <select id="act-plan-select" class="form-control">
+                  <option value="Shield Pro Plan">🛡️ Shield Pro Plan (Unlimited Proxy Calls + 4 Family Contacts)</option>
+                  <option value="Family Safe Plan">👨‍👩‍👧 Family Safe Plan (Multi-Party SOS Dialer + Geotag Guard)</option>
+                  <option value="Fleet Enterprise Plan">🚚 Fleet Enterprise Plan (Commercial Tracking & Bulk QR)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="wizard-actions-row">
+              <div></div>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="2">
+                Continue to Vehicle Details <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Vehicle Details -->
+          <div class="wizard-step-panel" id="wizard-step-2">
+            <div class="wizard-panel-header">
+              <i data-lucide="car"></i>
+              <div>
+                <h3>Step 2: Vehicle Specification & Masking</h3>
+                <p>Register your car / bike information. License plate numbers are automatically masked on the sticker for safety.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="act-veh-name">Vehicle Make & Model</label>
+                <input type="text" id="act-veh-name" class="form-control" placeholder="e.g. BMW 330i M-Sport, Hyundai Creta" value="Mercedes-Benz GLA 200" required>
+              </div>
+
+              <div class="form-group">
+                <label for="act-veh-plate">License Plate Number</label>
+                <input type="text" id="act-veh-plate" class="form-control" placeholder="e.g. DL 01 AB 1234" value="DL 03 CA 7788" required>
+              </div>
+
+              <div class="form-group">
+                <label for="act-veh-type">Vehicle Category</label>
+                <select id="act-veh-type" class="form-control">
+                  <option value="2-Wheeler (Bike/Scooter)">🏍️ 2-Wheeler (Bike / Motorcycle / Scooter / Superbike)</option>
+                  <option value="4-Wheeler (Car/Sedan)" selected>🚗 4-Wheeler (Car / Sedan / Hatchback)</option>
+                  <option value="4-Wheeler (SUV/4x4)">🚙 4-Wheeler (SUV / 4x4 / MUV)</option>
+                  <option value="Electric Vehicle (EV)">⚡ Electric Vehicle (EV - 2W & 4W)</option>
+                  <option value="3-Wheeler (Auto/Rickshaw)">🛺 3-Wheeler (Auto-Rickshaw / E-Rickshaw)</option>
+                  <option value="Commercial (Van/Truck)">🚚 Commercial (Van / Pickup / Truck)</option>
+                  <option value="Bus / Fleet">🚌 Bus / Fleet / School Transport</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="act-veh-color">Vehicle Body Color</label>
+                <input type="text" id="act-veh-color" class="form-control" placeholder="e.g. Obsidian Black, Mineral Grey" value="Cosmos Black">
+              </div>
+            </div>
+
+            <div class="wizard-actions-row">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="1">
+                <i data-lucide="chevron-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="3">
+                Continue to Owner Details <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Owner Details & Geotag -->
+          <div class="wizard-step-panel" id="wizard-step-3">
+            <div class="wizard-panel-header">
+              <i data-lucide="lock"></i>
+              <div>
+                <h3>Step 3: Owner Contact & Parking Geotag</h3>
+                <p>Your real phone number is stored in an encrypted vault and is NEVER shown to bystanders.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="act-owner-name">Full Owner Name</label>
+                <input type="text" id="act-owner-name" class="form-control" placeholder="e.g. Vikram Singhania" value="Vikram Singhania" required>
+              </div>
+
+              <div class="form-group">
+                <label for="act-owner-phone">Mobile Phone (For Masked Voice & WhatsApp Alerts)</label>
+                <input type="tel" id="act-owner-phone" class="form-control" placeholder="+91 98765 43210" value="+91 98119 55443" required>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="act-owner-address">Permanent Home Parking Address & Society</label>
+                <input type="text" id="act-owner-address" class="form-control" placeholder="e.g. Flat 604, Tower B, Godrej Woods, Sector 43" value="Flat 604, Tower B, Godrej Woods, Sector 43">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Home Parking GPS Geotag Pin</label>
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:0.6rem 0.8rem;">
+                  <div style="font-size:0.8rem;">
+                    <strong style="color:var(--accent-cyan); display:block;">📍 GPS Coordinates:</strong>
+                    <span id="home-gps-status" style="color:var(--text-secondary); font-size:0.75rem;">Lat: 28.6280, Lng: 77.3750 (Auto-Pinned)</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-fetch-home-gps">
+                    <i data-lucide="navigation"></i> Fetch My GPS
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="act-custom-sticker-note">Custom Quick Note to Show on Scanner Screen</label>
+                <textarea id="act-custom-sticker-note" class="form-control" rows="2" placeholder="e.g. Parked for a quick 10 min errand. If blocking, please alert me!">Parked for quick errand. If blocking or emergency, please tap alert and I will move immediately!</textarea>
+              </div>
+            </div>
+
+            <div class="wizard-actions-row">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="2">
+                <i data-lucide="chevron-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="4">
+                Continue to Family & Locker <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 4: Family & Digital Locker -->
+          <div class="wizard-step-panel" id="wizard-step-4">
+            <div class="wizard-panel-header">
+              <i data-lucide="users"></i>
+              <div>
+                <h3>Step 4: Emergency Family Network & Digital Locker</h3>
+                <p>Add trusted family members for cascade SOS calling and store emergency roadside assistance info.</p>
+              </div>
+            </div>
+
+            <h4 style="font-size:0.9rem; color:var(--accent-cyan); margin-bottom:0.75rem;">👨‍👩‍👧 Emergency Family Contacts:</h4>
+            <div class="form-grid" style="margin-bottom: 1.25rem;">
+              <!-- Contact 1 -->
+              <div class="form-group">
+                <label for="act-fam1-name">Emergency Contact 1 (Name)</label>
+                <input type="text" id="act-fam1-name" class="form-control" placeholder="e.g. Priya Singhania" value="Priya Singhania">
+              </div>
+              <div class="form-group">
+                <label for="act-fam1-rel">Relation</label>
+                <select id="act-fam1-rel" class="form-control">
+                  <option value="Spouse" selected>Spouse / Partner</option>
+                  <option value="Parent">Father / Mother</option>
+                  <option value="Sibling">Brother / Sister</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="act-fam1-phone">Contact 1 Mobile Phone (For Cascade SOS Call)</label>
+                <input type="tel" id="act-fam1-phone" class="form-control" placeholder="+91 98765 11111" value="+91 98119 22334">
+              </div>
+
+              <!-- Contact 2 -->
+              <div class="form-group">
+                <label for="act-fam2-name">Emergency Contact 2 (Name)</label>
+                <input type="text" id="act-fam2-name" class="form-control" placeholder="e.g. Ramesh Singhania" value="Ramesh Singhania">
+              </div>
+              <div class="form-group">
+                <label for="act-fam2-rel">Relation</label>
+                <select id="act-fam2-rel" class="form-control">
+                  <option value="Parent" selected>Father / Mother</option>
+                  <option value="Sibling">Brother / Sister</option>
+                  <option value="Friend">Trusted Friend</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="act-fam2-phone">Contact 2 Mobile Phone</label>
+                <input type="tel" id="act-fam2-phone" class="form-control" placeholder="+91 98765 22222" value="+91 98711 66778">
+              </div>
+            </div>
+
+            <h4 style="font-size:0.9rem; color:var(--accent-gold); margin-bottom:0.75rem;">📂 Digital Document Locker & Medical Info:</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="act-blood-group">Driver Blood Group</label>
+                <select id="act-blood-group" class="form-control">
+                  <option value="O+">O Positive (O+)</option>
+                  <option value="A+">A Positive (A+)</option>
+                  <option value="B+">B Positive (B+)</option>
+                  <option value="AB+">AB Positive (AB+)</option>
+                  <option value="O-">O Negative (O-)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="act-medical-note">Critical Medical Note / Allergies</label>
+                <input type="text" id="act-medical-note" class="form-control" placeholder="e.g. Asthmatic, Penicillin allergy" value="No Allergies">
+              </div>
+
+              <div class="form-group">
+                <label for="act-insurance-no">Insurance Policy Number</label>
+                <input type="text" id="act-insurance-no" class="form-control" placeholder="e.g. ICICI-LOMB-88291" value="HDFC-ERGO-99382-V">
+              </div>
+
+              <div class="form-group">
+                <label for="act-insurance-expiry">Insurance Expiry Date</label>
+                <input type="date" id="act-insurance-expiry" class="form-control" value="2027-10-30">
+              </div>
+
+              <div class="form-group">
+                <label for="act-puc-expiry">PUC Pollution Expiry Date</label>
+                <input type="date" id="act-puc-expiry" class="form-control" value="2027-05-15">
+              </div>
+
+              <div class="form-group">
+                <label for="act-rsa-phone">24x7 Roadside Assistance (RSA) Helpline</label>
+                <input type="tel" id="act-rsa-phone" class="form-control" placeholder="e.g. 1800-209-8899" value="1800-209-8899">
+              </div>
+            </div>
+
+            <div class="wizard-actions-row">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="3">
+                <i data-lucide="chevron-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="btn-complete-activation" style="background:var(--accent-emerald); color:#000; font-weight:800;">
+                <i data-lucide="sparkles"></i> Complete Activation & Generate QR Sticker
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: PUBLIC SCANNER PORTAL (WHAT BYSTANDER SEES WHEN SCANNING QR) -->
+    <!-- ========================================================================= -->
+    <section id="view-scanner" class="view-panel">
+      <div class="scanner-container">
+        <!-- Interactive Demo Device Frame -->
+        <div class="phone-frame">
+          <div class="phone-notch">
+            <span class="notch-camera"></span>
+            <span class="notch-speaker"></span>
+          </div>
+
+          <!-- Screen Content -->
+          <div class="phone-screen">
+            <!-- Top Verified Security Bar -->
+            <div class="scanner-top-bar">
+              <div class="verified-tag">
+                <i data-lucide="shield-check"></i>
+                <span>AutoGuard Verified Vehicle</span>
+              </div>
+              <div class="demo-switch-tag" title="Switch active car for demonstration">
+                <select id="scanner-vehicle-selector" class="scanner-select">
+                  <!-- Options populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Owner Quick Action Bar (If Owner Scans their own QR) -->
+            <div class="scanner-owner-action-banner">
+              <span>👑 Vehicle Owner?</span>
+              <button type="button" class="btn-owner-setup-link" id="btn-scanner-open-owner-setup">
+                <i data-lucide="edit-2"></i> <span>Fill / Edit Details & Plan</span>
+              </button>
+            </div>
+
+            <!-- Vehicle Identity Card (Zero Personal Numbers Revealed) -->
+            <div class="scanned-car-card" id="scanned-car-display">
+              <div class="car-badge-header">
+                <div class="car-avatar-icon" id="scan-veh-avatar" style="font-size:1.5rem; display:flex; align-items:center; justify-content:center;">
+                  🚗
+                </div>
+                <div class="car-primary-meta">
+                  <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem; flex-wrap:wrap;">
+                    <h3 class="car-name-display" id="scan-car-name">BMW 330i M-Sport</h3>
+                    <span class="badge" id="scan-veh-category-badge" style="background:rgba(59,130,246,0.18); color:var(--accent-blue); font-size:0.7rem; padding:2px 7px; border-radius:12px; font-weight:700; border:1px solid rgba(59,130,246,0.3);">4-Wheeler</span>
+                  </div>
+                  <div class="car-number-masked" id="scan-car-plate">DL 01 ••• 4492</div>
+                </div>
+              </div>
+
+              <!-- Owner Status & Quick Note -->
+              <div class="owner-status-box">
+                <div class="status-indicator-row">
+                  <span class="pulse-dot"></span>
+                  <span class="owner-avail-text" id="scan-owner-status">Owner Nearby • Responds in &lt; 2 mins</span>
+                </div>
+                <p class="owner-note" id="scan-owner-note">"Parked for quick errand. If blocking, please tap below and I will move immediately!"</p>
+              </div>
+            </div>
+
+            <!-- Issue Category Quick Actions -->
+            <div class="scanner-action-section">
+              <h4 class="action-heading">Select Reason to Alert Owner:</h4>
+
+              <div class="issue-categories-grid">
+                <!-- 1. Wrong Parking -->
+                <button class="issue-cat-btn active" data-category="wrong_parking">
+                  <div class="cat-icon-wrap cat-parking">
+                    <i data-lucide="circle-slash-2"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Wrong / Blocked Parking</span>
+                    <span class="cat-sub">Blocking driveway, gate, ramp, reserved spot</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+
+                <!-- 2. Hazard / Vehicle Issue -->
+                <button class="issue-cat-btn" data-category="hazard">
+                  <div class="cat-icon-wrap cat-hazard">
+                    <i data-lucide="alert-triangle"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Vehicle Hazard & Safety Alert</span>
+                    <span class="cat-sub">Window/sunroof open, lights ON, flat tyre, leak</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+
+                <!-- 3. Critical SOS / Life & Accident -->
+                <button class="issue-cat-btn" data-category="emergency">
+                  <div class="cat-icon-wrap cat-sos">
+                    <i data-lucide="siren"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Critical Emergency & SOS</span>
+                    <span class="cat-sub">Accident, child/pet inside, towing, fire/debris</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+
+                <!-- 4. Security & Door/Key Notice -->
+                <button class="issue-cat-btn" data-category="security">
+                  <div class="cat-icon-wrap cat-security">
+                    <i data-lucide="lock"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Door / Key / Security Notice</span>
+                    <span class="cat-sub">Door/trunk ajar, keys in ignition, alarm ringing</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+
+                <!-- 5. Community & EV / Maintenance Notice -->
+                <button class="issue-cat-btn" data-category="community">
+                  <div class="cat-icon-wrap cat-community">
+                    <i data-lucide="zap"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Community / EV / Road Notice</span>
+                    <span class="cat-sub">EV charge done, pest spray, gate closing, cleaning</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+
+                <!-- 6. Anonymous Chat / Custom Message -->
+                <button class="issue-cat-btn" data-category="custom_msg">
+                  <div class="cat-icon-wrap cat-chat">
+                    <i data-lucide="message-square"></i>
+                  </div>
+                  <div class="cat-text">
+                    <span class="cat-title">Send Custom Message</span>
+                    <span class="cat-sub">Direct encrypted chat with owner</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="cat-arrow"></i>
+                </button>
+              </div>
+
+              <!-- Dynamic Sub-Options Form for Selected Category -->
+              <div class="category-details-form" id="category-sub-form">
+                <!-- Sub-options dynamically rendered (e.g. quick tags) -->
+              </div>
+
+              <!-- Location & Evidence Tools -->
+              <div class="evidence-toolbar">
+                <button class="tool-btn" id="btn-attach-location" type="button">
+                  <i data-lucide="map-pin"></i>
+                  <span id="loc-status-text">Attach My Location</span>
+                </button>
+                <label class="tool-btn" for="photo-evidence-input">
+                  <i data-lucide="camera"></i>
+                  <span id="photo-status-text">Attach Photo</span>
+                  <input type="file" id="photo-evidence-input" accept="image/*" style="display:none">
+                </label>
+              </div>
+
+              <!-- Photo Preview Container -->
+              <div id="photo-preview-box" class="photo-preview-box hidden">
+                <img id="photo-preview-img" src="" alt="Evidence photo">
+                <button id="btn-remove-photo" class="btn-remove-photo" title="Remove photo">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+
+              <!-- Action Buttons for Contacting & 1-Click Emergency Direct Calling -->
+              <div class="contact-actions-stack">
+                <!-- 1. DIRECT 1-CLICK CALL VEHICLE OWNER (Auto-Cascade to Family in 8s) -->
+                <button class="btn btn-emergency-family-sos" id="btn-scanner-cascade-sos-call" type="button">
+                  <div class="sos-btn-content">
+                    <div class="sos-icon-pulsing">
+                      <i data-lucide="phone-call" class="pulse-icon"></i>
+                    </div>
+                    <div class="sos-btn-text">
+                      <div class="direct-call-badge">PRIORITY #1 DIRECT CALL</div>
+                      <strong>🚨 1-Click Call Vehicle Owner</strong>
+                      <small>Dials Owner Directly (Masked) • If Not Answered, Auto-Calls 2 Family Members at Same Time!</small>
+                    </div>
+                  </div>
+                </button>
+
+                <!-- 2. TRIPLE 1-CLICK EMERGENCY PILLARS: AMBULANCE, POLICE & FAMILY MULTI-RING -->
+                <div class="emergency-pillars-grid">
+                  <!-- Pillar A: 1-Click Ambulance (108) -->
+                  <button type="button" class="btn btn-pillar-ambulance" id="btn-scanner-call-ambulance" title="1-Click Call Ambulance (108)">
+                    <div class="pillar-top-row">
+                      <span class="pillar-badge">108 SOS</span>
+                      <span class="pillar-emoji">🚑</span>
+                    </div>
+                    <div class="pillar-title">Call Ambulance</div>
+                    <small class="pillar-sub">Medical Emergency</small>
+                  </button>
+
+                  <!-- Pillar B: 1-Click Police (112) -->
+                  <button type="button" class="btn btn-pillar-police" id="btn-scanner-call-police" title="1-Click Call Police (112)">
+                    <div class="pillar-top-row">
+                      <span class="pillar-badge">112 PCR</span>
+                      <span class="pillar-emoji">🚓</span>
+                    </div>
+                    <div class="pillar-title">Call Police</div>
+                    <small class="pillar-sub">Traffic & Safety</small>
+                  </button>
+
+                  <!-- Pillar C: 1-Click Family Simultaneous Ring -->
+                  <button type="button" class="btn btn-pillar-family" id="btn-scanner-family-sos" title="1-Click Ring All Family Members Simultaneously">
+                    <div class="pillar-top-row">
+                      <span class="pillar-badge">2+ Multi</span>
+                      <span class="pillar-emoji">👨‍👩‍👧</span>
+                    </div>
+                    <div class="pillar-title">Family SOS</div>
+                    <small class="pillar-sub">Simultaneous Call</small>
+                  </button>
+                </div>
+
+                <!-- 3. Push Alert and WhatsApp Row -->
+                <div class="dual-actions-row">
+                  <button class="btn btn-primary-scanner" id="btn-send-scanner-alert" type="button">
+                    <i data-lucide="send"></i>
+                    <span>Send Instant Alert</span>
+                  </button>
+                  <button class="btn btn-whatsapp" id="btn-scanner-whatsapp" type="button">
+                    <i data-lucide="message-circle"></i>
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Scanner Privacy Guarantee -->
+              <div class="scanner-footer-notice">
+                <i data-lucide="shield"></i>
+                <span>Privacy Protected: Your phone number & the owner's number are never shown.</span>
+              </div>
+
+              <!-- NEARBY ESSENTIAL SERVICES & PARKING RADAR -->
+              <div class="nearby-radar-widget">
+                <div class="radar-header">
+                  <div class="radar-title-wrap">
+                    <i data-lucide="navigation"></i>
+                    <div>
+                      <h5>Nearby Services & Parking Radar</h5>
+                      <small>Live guidance near this vehicle location</small>
+                    </div>
+                  </div>
+                  <div class="radar-view-modes">
+                    <button type="button" class="btn-radar-view active" data-mode="list" id="btn-radar-list-view" title="List View">
+                      <i data-lucide="list"></i> List
+                    </button>
+                    <button type="button" class="btn-radar-view" data-mode="map" id="btn-radar-map-view" title="Interactive Map View">
+                      <i data-lucide="map"></i> Live Map
+                    </button>
+                  </div>
+                </div>
+
+                <!-- GPS Live Origin Bar -->
+                <div class="gps-origin-bar">
+                  <div class="gps-origin-info">
+                    <span class="gps-pulse-icon">📍</span>
+                    <div class="gps-text-wrap">
+                      <div class="gps-origin-title" id="scanner-gps-origin-label">Vehicle Parked GPS Active</div>
+                      <div class="gps-origin-sub" id="scanner-gps-origin-coords">28.6139° N, 77.2090° E • Nearest First</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-gps-refresh" id="btn-scanner-refresh-gps" title="Re-sync device GPS location">
+                    <i data-lucide="refresh-cw"></i> <span>Use My GPS</span>
+                  </button>
+                </div>
+
+                <!-- Radar Filters -->
+                <div class="radar-filter-chips">
+                  <button type="button" class="radar-chip active" data-type="all">All</button>
+                  <button type="button" class="radar-chip" data-type="parking">🅿️ Parking</button>
+                  <button type="button" class="radar-chip" data-type="hospital">🏥 Hospitals</button>
+                  <button type="button" class="radar-chip" data-type="fuel">⛽ Fuel & EV</button>
+                  <button type="button" class="radar-chip" data-type="mechanic">🔧 Mechanic</button>
+                  <button type="button" class="radar-chip" data-type="police">🚓 Police</button>
+                </div>
+
+                <!-- Interactive Leaflet Live Map View -->
+                <div id="scanner-radar-live-map" class="radar-map-container hidden"></div>
+
+                <!-- Nearby Places Stream List -->
+                <div class="nearby-places-stream" id="nearby-places-list">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Explanation Side Panel (For Web Viewers) -->
+        <div class="scanner-info-sidepanel">
+          <div class="info-card">
+            <h3><i data-lucide="smartphone"></i> How Scanning Works</h3>
+            <p>When someone scans the QR code sticker placed on your car windshield or window:</p>
+            <ul class="feature-bullets">
+              <li>
+                <div class="bullet-icon"><i data-lucide="eye-off"></i></div>
+                <div><strong>Zero Privacy Leakage:</strong> Your personal phone number, full name, and address are completely hidden.</div>
+              </li>
+              <li>
+                <div class="bullet-icon"><i data-lucide="zap"></i></div>
+                <div><strong>1-Tap Fast Actions:</strong> Scanners can report wrong parking, open windows, lights on, or flat tyres in seconds.</div>
+              </li>
+              <li>
+                <div class="bullet-icon"><i data-lucide="phone"></i></div>
+                <div><strong>Masked Voice Relay:</strong> Scanners can talk to you directly through encrypted in-browser calling.</div>
+              </li>
+              <li>
+                <div class="bullet-icon"><i data-lucide="users"></i></div>
+                <div><strong>Emergency Family SOS:</strong> In serious emergencies, bystander scans notify you and your emergency family contacts simultaneously.</div>
+              </li>
+            </ul>
+
+            <div class="try-test-actions">
+              <button class="btn btn-sm btn-outline" id="btn-fill-wrong-parking">
+                ⚡ Auto-Fill "Wrong Parking" Test
+              </button>
+              <button class="btn btn-sm btn-outline" id="btn-fill-hazard">
+                ⚡ Auto-Fill "Lights Left On" Test
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: SMART QR STICKER STUDIO & PRINT MAKER -->
+    <!-- ========================================================================= -->
+    <section id="view-studio" class="view-panel">
+      <div class="studio-layout">
+        <!-- Controls Panel -->
+        <div class="studio-controls-card">
+          <div class="studio-header">
+            <i data-lucide="printer"></i>
+            <div>
+              <h3>QR Sticker Print Studio</h3>
+              <p>Design and print professional waterproof car windshield stickers</p>
+            </div>
+          </div>
+
+          <form id="sticker-config-form" class="studio-form">
+            <!-- Select Vehicle -->
+            <div class="form-group">
+              <label for="studio-vehicle-select">Select Vehicle for Sticker</label>
+              <select id="studio-vehicle-select" class="form-control">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <!-- QR Target Base URL (Local IP / Live Domain) -->
+            <div class="form-group">
+              <label for="studio-base-url">
+                QR Target URL (For Real Phone Scanning)
+                <span style="font-size: 0.7rem; color: var(--accent-cyan); font-weight: normal;">• Phone & PC on same Wi-Fi</span>
+              </label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="studio-base-url" class="form-control" placeholder="e.g. http://192.168.1.6:5173" value="http://192.168.1.6:5173">
+                <button type="button" class="btn btn-sm btn-outline" id="btn-detect-ip" title="Auto-detect current page URL">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+              <small style="display: block; font-size: 0.725rem; color: var(--text-muted); margin-top: 4px;">
+                💡 Scanners on your phone will immediately load this URL when reading the QR code.
+              </small>
+            </div>
+
+            <!-- Theme / Color Style -->
+            <div class="form-group">
+              <label>Sticker Style & Color</label>
+              <div class="theme-options-grid">
+                <label class="theme-chip active" data-theme="dark-gold">
+                  <input type="radio" name="sticker_theme" value="dark-gold" checked>
+                  <span class="theme-chip-preview bg-dark-gold"></span>
+                  <span>Stealth Gold</span>
+                </label>
+                <label class="theme-chip" data-theme="cyber-blue">
+                  <input type="radio" name="sticker_theme" value="cyber-blue">
+                  <span class="theme-chip-preview bg-cyber-blue"></span>
+                  <span>Cyber Neon</span>
+                </label>
+                <label class="theme-chip" data-theme="alert-amber">
+                  <input type="radio" name="sticker_theme" value="alert-amber">
+                  <span class="theme-chip-preview bg-alert-amber"></span>
+                  <span>Safety Amber</span>
+                </label>
+                <label class="theme-chip" data-theme="clean-white">
+                  <input type="radio" name="sticker_theme" value="clean-white">
+                  <span class="theme-chip-preview bg-clean-white"></span>
+                  <span>Crisp White</span>
+                </label>
+                <label class="theme-chip" data-theme="carbon-red">
+                  <input type="radio" name="sticker_theme" value="carbon-red">
+                  <span class="theme-chip-preview bg-carbon-red"></span>
+                  <span>Carbon Red</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Vehicle Category Preset Chips for Fast Title Switching -->
+            <div class="form-group">
+              <label>Vehicle Category Presets (1-Click Header Switch)</label>
+              <div class="category-preset-chips" id="sticker-category-presets">
+                <button type="button" class="cat-preset-chip active" data-title="SCAN TO CONTACT VEHICLE OWNER">🛡️ Universal Vehicle</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT 2-WHEELER OWNER">🏍️ 2-Wheeler (Bike)</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT CAR OWNER">🚗 4-Wheeler (Car)</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT SUV OWNER">🚙 4-Wheeler (SUV)</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT EV OWNER">⚡ Electric EV</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT AUTO OWNER">🛺 3-Wheeler Auto</button>
+                <button type="button" class="cat-preset-chip" data-title="SCAN TO CONTACT TRUCK OWNER">🚚 Commercial Truck</button>
+              </div>
+            </div>
+
+            <!-- Custom Heading on Sticker -->
+            <div class="form-group">
+              <label for="sticker-title-input">Sticker Header Text (Editable)</label>
+              <input type="text" id="sticker-title-input" class="form-control" value="SCAN TO CONTACT VEHICLE OWNER">
+            </div>
+
+            <!-- Subtitle / Instruction Text -->
+            <div class="form-group">
+              <label for="sticker-sub-input">Instruction Message</label>
+              <input type="text" id="sticker-sub-input" class="form-control" value="Wrong Parking • Emergency • Vehicle Hazard">
+            </div>
+
+            <!-- Privacy Guarantee Badge -->
+            <div class="form-group">
+              <label for="sticker-privacy-text">Privacy Guarantee Tagline</label>
+              <input type="text" id="sticker-privacy-text" class="form-control" value="🔒 100% Privacy Protected • No Number Shown">
+            </div>
+
+            <!-- Print Actions -->
+            <div class="studio-btn-row">
+              <button type="button" class="btn btn-primary" id="btn-print-sticker">
+                <i data-lucide="printer"></i>
+                <span>Print Sticker (PDF/Paper)</span>
+              </button>
+              <button type="button" class="btn btn-outline" id="btn-download-sticker-png">
+                <i data-lucide="download"></i>
+                <span>Download High-Res PNG</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Live Realistic Sticker Preview Canvas -->
+        <div class="studio-preview-card">
+          <div class="preview-header">
+            <span class="preview-badge"><i data-lucide="sparkles"></i> Live High-Res Sticker Preview</span>
+            <div class="preview-zoom-actions">
+              <span class="sticker-dim-badge">Standard Size: 85mm × 85mm</span>
+            </div>
+          </div>
+
+          <!-- Printable Sticker Physical Badge Element -->
+          <div class="sticker-stage">
+            <div class="physical-sticker dark-gold" id="physical-sticker-canvas">
+              <!-- Holographic / Glossy Border Ring -->
+              <div class="sticker-gloss-overlay"></div>
+              
+              <div class="sticker-inner">
+                <!-- Top Brand Bar -->
+                <div class="sticker-top">
+                  <div class="sticker-logo">
+                    <i data-lucide="shield-alert" class="sticker-icon"></i>
+                    <span>AUTOGUARD <strong>QR</strong></span>
+                  </div>
+                  <div class="sticker-security-chip">
+                    <i data-lucide="nfc"></i>
+                    <span>SECURE NFC/QR</span>
+                  </div>
+                </div>
+
+                <!-- Main Catchy Title -->
+                <h2 class="sticker-main-title" id="preview-sticker-title">SCAN TO CONTACT VEHICLE OWNER</h2>
+                <div class="sticker-sub-pills" id="preview-sticker-sub">
+                  <span>🚗 Wrong Parking</span>
+                  <span>⚠️ Vehicle Hazard</span>
+                  <span>🚨 Emergency SOS</span>
+                </div>
+
+                <!-- Central QR Code Frame -->
+                <div class="sticker-qr-wrapper">
+                  <div class="qr-target-corner top-left"></div>
+                  <div class="qr-target-corner top-right"></div>
+                  <div class="qr-target-corner bottom-left"></div>
+                  <div class="qr-target-corner bottom-right"></div>
+                  <div id="live-qrcode-container" class="qr-canvas-holder">
+                    <!-- QR rendered here -->
+                  </div>
+                </div>
+
+                <!-- Masked Plate & Tagline -->
+                <div class="sticker-bottom-info">
+                  <div class="sticker-masked-plate" id="preview-sticker-plate">VEHICLE: DL 01 ••• 4492</div>
+                  <div class="sticker-privacy-guarantee" id="preview-sticker-guarantee">
+                    <i data-lucide="lock"></i>
+                    <span>100% Privacy Protected • Instant Masked Call & SOS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Print Instruction Note -->
+          <div class="print-tips-banner">
+            <i data-lucide="info"></i>
+            <div>
+              <strong>Pro Tip for Car Owners:</strong> Print on high-quality waterproof vinyl sticker paper or stick inside the windshield with transparent glass tape.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: EMERGENCY FAMILY NETWORK CONFIGURATION -->
+    <!-- ========================================================================= -->
+    <section id="view-family" class="view-panel">
+      <div class="family-page-container">
+        <div class="family-hero">
+          <div class="family-hero-icon">
+            <i data-lucide="heart-handshake"></i>
+          </div>
+          <div>
+            <h2>Emergency Family Contact Circle</h2>
+            <p>If your car is in an accident, being towed, or marked as a critical emergency by a bystander scan, AutoGuard QR will automatically broadcast the live GPS location, photos, and emergency alerts to these contacts.</p>
+          </div>
+        </div>
+
+        <div class="family-cards-grid" id="family-contacts-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <div class="family-actions-row">
+          <button class="btn btn-primary" id="btn-add-family-member">
+            <i data-lucide="user-plus"></i>
+            <span>Add Emergency Contact</span>
+          </button>
+          <button class="btn btn-outline" id="btn-test-family-sos-dispatch">
+            <i data-lucide="radio"></i>
+            <span>Test Family SOS Broadcast (Demo)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 5: VEHICLE OWNER QR PLAN ACTIVATION & 1-CLICK ONBOARDING WIZARD -->
+    <!-- ========================================================================= -->
+    <section id="view-activation" class="view-panel">
+      <div class="activation-wizard-container">
+        <!-- Wizard Header -->
+        <div class="wizard-hero">
+          <div class="wizard-hero-icon">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div class="wizard-hero-text">
+            <h2>Activate Your Purchased QR Plan</h2>
+            <p>Fill your vehicle, home location, family contacts, and digital locker documents once. Your Smart QR sticker is instantly activated!</p>
+          </div>
+          <div class="wizard-plan-chip">
+            <span class="plan-tag">Shield Pro Plan</span>
+            <small>1-Year Warranty & Unlimited Calls</small>
+          </div>
+        </div>
+
+        <!-- Multi-Step Progress Indicator -->
+        <div class="wizard-steps-bar">
+          <div class="wizard-step-node active" data-step="1">
+            <span class="step-num">1</span>
+            <span class="step-title">QR Serial & Car</span>
+          </div>
+          <div class="wizard-step-connector"></div>
+          <div class="wizard-step-node" data-step="2">
+            <span class="step-num">2</span>
+            <span class="step-title">Home & Owner</span>
+          </div>
+          <div class="wizard-step-connector"></div>
+          <div class="wizard-step-node" data-step="3">
+            <span class="step-num">3</span>
+            <span class="step-title">Family SOS</span>
+          </div>
+          <div class="wizard-step-connector"></div>
+          <div class="wizard-step-node" data-step="4">
+            <span class="step-num">4</span>
+            <span class="step-title">Digital Locker</span>
+          </div>
+        </div>
+
+        <!-- Wizard Card Form -->
+        <div class="wizard-card-form">
+          <!-- STEP 1: QR TAG SERIAL & VEHICLE PROFILE -->
+          <div class="wizard-step-panel active" id="wizard-step-1">
+            <div class="step-header">
+              <i data-lucide="car"></i>
+              <div>
+                <h3>Step 1: Vehicle & QR Tag Serial</h3>
+                <p>Enter the serial code printed on your purchased QR packaging kit.</p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-qr-serial">QR Kit Serial / Activation Key <span class="required">*</span></label>
+                <div class="input-with-action">
+                  <input type="text" id="act-qr-serial" class="form-control font-mono" value="AG-2026-PRO-9982" placeholder="e.g. AG-2026-PRO-XXXX" required>
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-scan-kit-code" title="Simulate scanning physical kit QR">
+                    <i data-lucide="qr-code"></i> Auto-Fill
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="act-plan-select">Selected QR Plan</label>
+                <select id="act-plan-select" class="form-control">
+                  <option value="Shield Pro Plan (₹599/yr)">Shield Pro Plan (₹599/yr) - Unlimited SOS + Calls</option>
+                  <option value="Standard Shield (₹299/yr)">Standard Shield (₹299/yr) - Parking Alerts</option>
+                  <option value="Fleet Family 3-Pack (₹999/yr)">Fleet Family 3-Pack (₹999/yr)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-veh-name">Vehicle Make & Model <span class="required">*</span></label>
+                <input type="text" id="act-veh-name" class="form-control" placeholder="e.g. Hyundai Creta SX / Honda City" required>
+              </div>
+              <div class="form-group">
+                <label for="act-veh-plate">License Plate Number <span class="required">*</span></label>
+                <input type="text" id="act-veh-plate" class="form-control font-mono" placeholder="e.g. DL 03 CC 9901" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-veh-type">Vehicle Type</label>
+                <select id="act-veh-type" class="form-control">
+                  <option value="Car">Car / Sedan</option>
+                  <option value="SUV">SUV / 4x4</option>
+                  <option value="Bike">Motorcycle / Scooter</option>
+                  <option value="Electric">Electric Vehicle (EV)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="act-veh-color">Vehicle Color</label>
+                <input type="text" id="act-veh-color" class="form-control" placeholder="e.g. Polar White / Metallic Silver">
+              </div>
+            </div>
+
+            <div class="step-nav-footer">
+              <div></div>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="2">
+                <span>Next: Owner & Home Location</span>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2: OWNER & HOME PARKING LOCATION -->
+          <div class="wizard-step-panel" id="wizard-step-2">
+            <div class="step-header">
+              <i data-lucide="map-pin"></i>
+              <div>
+                <h3>Step 2: Owner & Home Parking Location</h3>
+                <p>Your phone number remains 100% encrypted. Home location helps identify safe parking.</p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-owner-name">Owner Full Name <span class="required">*</span></label>
+                <input type="text" id="act-owner-name" class="form-control" placeholder="e.g. Aryan Malhotra" required>
+              </div>
+              <div class="form-group">
+                <label for="act-owner-phone">Mobile Phone (For WhatsApp & Encrypted Calls) <span class="required">*</span></label>
+                <input type="tel" id="act-owner-phone" class="form-control" placeholder="+91 98765 12345" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="act-owner-address">Home / Regular Parking Address</label>
+              <input type="text" id="act-owner-address" class="form-control" placeholder="e.g. Flat 402, Royal Palms Society, Sector 62">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Home GPS Geotag Pin</label>
+                <div class="gps-detect-row">
+                  <button type="button" class="btn btn-outline btn-sm" id="btn-fetch-home-gps">
+                    <i data-lucide="map-pin"></i> Auto-Detect Home GPS Pin
+                  </button>
+                  <span class="gps-badge" id="home-gps-status">Lat: 28.6280, Lng: 77.3750 (Auto-saved)</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="act-custom-sticker-note">Quick Scanner Greeting Note</label>
+                <input type="text" id="act-custom-sticker-note" class="form-control" placeholder="e.g. If blocking driveway or emergency, please alert me!">
+              </div>
+            </div>
+
+            <div class="step-nav-footer">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="1">
+                <i data-lucide="chevron-left"></i> Previous
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="3">
+                <span>Next: Emergency Family Network</span>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: 1-CLICK FAMILY EMERGENCY CIRCLE -->
+          <div class="wizard-step-panel" id="wizard-step-3">
+            <div class="step-header">
+              <i data-lucide="heart-handshake"></i>
+              <div>
+                <h3>Step 3: 1-Click Family Emergency Circle</h3>
+                <p>These contacts will receive automatic SOS siren alerts and live GPS location during accidents.</p>
+              </div>
+            </div>
+
+            <!-- Pre-Configured Family Members Grid -->
+            <div class="wizard-family-inputs-grid">
+              <!-- Family Member 1 -->
+              <div class="wizard-fam-card">
+                <div class="fam-card-badge">Primary Emergency #1</div>
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="act-fam1-name" class="form-control" placeholder="e.g. Priya (Spouse)" value="Priya Sharma">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Relationship</label>
+                    <select id="act-fam1-rel" class="form-control">
+                      <option value="Spouse" selected>Spouse</option>
+                      <option value="Parent">Parent</option>
+                      <option value="Sibling">Sibling</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="act-fam1-phone" class="form-control" placeholder="+91 98765 00001" value="+91 98765 00001">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Family Member 2 -->
+              <div class="wizard-fam-card">
+                <div class="fam-card-badge">Secondary Emergency #2</div>
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="act-fam2-name" class="form-control" placeholder="e.g. Ramesh (Father)" value="Ramesh Sharma">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Relationship</label>
+                    <select id="act-fam2-rel" class="form-control">
+                      <option value="Parent" selected>Father / Mother</option>
+                      <option value="Brother">Brother</option>
+                      <option value="Doctor">Family Doctor</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="act-fam2-phone" class="form-control" placeholder="+91 98765 00002" value="+91 98765 00002">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medical & Blood Group Tag -->
+            <div class="form-row" style="margin-top: 1rem;">
+              <div class="form-group">
+                <label for="act-blood-group">Driver Blood Group (Optional for Medical SOS)</label>
+                <select id="act-blood-group" class="form-control">
+                  <option value="O+">O Positive (O+)</option>
+                  <option value="A+">A Positive (A+)</option>
+                  <option value="B+">B Positive (B+)</option>
+                  <option value="AB+">AB Positive (AB+)</option>
+                  <option value="O-">O Negative (O-)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="act-medical-note">Emergency Medical Note / Allergies</label>
+                <input type="text" id="act-medical-note" class="form-control" placeholder="e.g. Diabetic / Asthmatic / No Allergies">
+              </div>
+            </div>
+
+            <div class="step-nav-footer">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="2">
+                <i data-lucide="chevron-left"></i> Previous
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-target="4">
+                <span>Next: Digital Document Locker</span>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: DIGITAL DOCUMENT LOCKER & 1-CLICK ACTIVATION -->
+          <div class="wizard-step-panel" id="wizard-step-4">
+            <div class="step-header">
+              <i data-lucide="lock"></i>
+              <div>
+                <h3>Step 4: Digital Vehicle Locker & Instant Activation</h3>
+                <p>Store your insurance policy, PUC expiry, and Roadside Assistance numbers securely in your phone app.</p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-insurance-no">Insurance Policy Number</label>
+                <input type="text" id="act-insurance-no" class="form-control font-mono" placeholder="e.g. HDFC-ERGO-9920182-V">
+              </div>
+              <div class="form-group">
+                <label for="act-insurance-expiry">Insurance Expiry Date</label>
+                <input type="date" id="act-insurance-expiry" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="act-puc-expiry">Pollution (PUC) Expiry Date</label>
+                <input type="date" id="act-puc-expiry" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="act-rsa-phone">Roadside Assistance (RSA) Toll-Free</label>
+                <input type="tel" id="act-rsa-phone" class="form-control font-mono" placeholder="e.g. 1800-209-8899" value="1800-209-8899">
+              </div>
+            </div>
+
+            <!-- Privacy Guarantee Agreement Checkbox -->
+            <div class="privacy-agreement-card">
+              <label class="checkbox-label">
+                <input type="checkbox" id="act-privacy-agree" checked required>
+                <span><strong>Activate 100% Privacy Shield</strong> • Never reveal my real phone number or home address on the public sticker. All calls will route via encrypted proxy.</span>
+              </label>
+            </div>
+
+            <div class="step-nav-footer">
+              <button type="button" class="btn btn-outline btn-prev-step" data-target="3">
+                <i data-lucide="chevron-left"></i> Previous
+              </button>
+              <button type="button" class="btn btn-gradient btn-lg" id="btn-complete-activation">
+                <i data-lucide="sparkles"></i>
+                <span>Complete 1-Click QR Activation</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 6: ADMIN MASTER CONTROL PANEL -->
+    <!-- ========================================================================= -->
+    <section id="view-admin" class="view-panel">
+      <div class="admin-container">
+        <!-- Admin Top Metric Strip -->
+        <div class="admin-header-strip">
+          <div>
+            <h2><i data-lucide="shield-check" class="text-blue"></i> AutoGuard Master Admin Console</h2>
+            <p>Platform monitoring, bulk QR batch generator, customer subscriptions, and emergency audit logs.</p>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-primary" id="btn-admin-gen-batch">
+              <i data-lucide="plus"></i>
+              <span>Generate Bulk QR Batch</span>
+            </button>
+            <button class="btn btn-outline" id="btn-admin-export-data">
+              <i data-lucide="download"></i>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin Overview Metrics Grid -->
+        <div class="admin-metrics-grid">
+          <div class="admin-stat-card">
+            <div class="stat-icon bg-blue"><i data-lucide="qr-code"></i></div>
+            <div class="stat-body">
+              <span class="stat-title">Total QR Tags</span>
+              <span class="stat-number" id="adm-total-tags">1,480</span>
+              <span class="stat-trend positive">+14% this month</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon bg-emerald"><i data-lucide="check-circle-2"></i></div>
+            <div class="stat-body">
+              <span class="stat-title">Active Activated Plans</span>
+              <span class="stat-number" id="adm-active-plans">1,245</span>
+              <span class="stat-trend positive">94.2% Health Rate</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon bg-amber"><i data-lucide="dollar-sign"></i></div>
+            <div class="stat-body">
+              <span class="stat-title">Subscription Revenue</span>
+              <span class="stat-number" id="adm-total-revenue">₹7,45,750</span>
+              <span class="stat-trend positive">Shield Pro Bestseller</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon bg-purple"><i data-lucide="siren"></i></div>
+            <div class="stat-body">
+              <span class="stat-title">SOS Emergency Dispatches</span>
+              <span class="stat-number" id="adm-total-sos">34</span>
+              <span class="stat-trend">100% Family Alerted</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Main Content Grid -->
+        <div class="admin-content-grid">
+          <!-- Customers & Activated QR Plans Table -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3><i data-lucide="users"></i> Activated Customer QR Plans</h3>
+              <div class="table-search-box">
+                <input type="text" id="adm-customer-search" placeholder="Search by Plate, Owner, or Serial..." class="form-control form-control-sm">
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="adm-customers-table">
+                <thead>
+                  <tr>
+                    <th>Serial Code</th>
+                    <th>Vehicle & Plate</th>
+                    <th>Owner Contact</th>
+                    <th>Plan Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-customers-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Live SOS Emergency Dispatch Logs -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3><i data-lucide="radio"></i> Live Emergency & Incident Audit Logs</h3>
+              <span class="badge badge-pulse">Real-time Stream</span>
+            </div>
+
+            <div class="admin-audit-list" id="adm-audit-logs-list">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD / EDIT VEHICLE -->
+  <!-- ========================================================================= -->
+  <div id="modal-vehicle" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-vehicle-title"><i data-lucide="car"></i> Register New Vehicle</h3>
+        <button class="modal-close-btn" id="btn-close-vehicle-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-vehicle" class="modal-body">
+        <input type="hidden" id="vehicle-id-input">
+        
+        <!-- Vehicle Base Specs -->
+        <div class="form-group">
+          <label for="vehicle-name-input">Vehicle Make & Model</label>
+          <input type="text" id="vehicle-name-input" class="form-control" placeholder="e.g. Royal Enfield Hunter 350 / BMW 330i" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vehicle-plate-input">License Plate Number</label>
+            <input type="text" id="vehicle-plate-input" class="form-control" placeholder="e.g. DL 01 AB 1234" required>
+          </div>
+          <div class="form-group">
+            <label for="vehicle-type-input">Vehicle Category</label>
+            <select id="vehicle-type-input" class="form-control">
+              <option value="2-Wheeler (Bike/Scooter)">🏍️ 2-Wheeler (Bike / Scooter / Motorcycle)</option>
+              <option value="4-Wheeler (Car/Sedan)" selected>🚗 4-Wheeler (Car / Sedan / Hatchback)</option>
+              <option value="4-Wheeler (SUV/4x4)">🚙 4-Wheeler (SUV / 4x4 / MUV)</option>
+              <option value="Electric Vehicle (EV)">⚡ Electric Vehicle (EV - 2W & 4W)</option>
+              <option value="3-Wheeler (Auto/Rickshaw)">🛺 3-Wheeler (Auto-Rickshaw / E-Rickshaw)</option>
+              <option value="Commercial (Van/Truck)">🚚 Commercial (Van / Pickup / Truck)</option>
+              <option value="Bus / Fleet">🚌 Bus / Fleet / School Transport</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-color-input">Vehicle Color</label>
+          <input type="text" id="vehicle-color-input" class="form-control" placeholder="e.g. Pearl White / Midnight Black">
+        </div>
+
+        <!-- Section 2: Owner Contact (100% Encrypted & Masked) -->
+        <div style="border-top:1px solid var(--border-glass); padding-top:0.75rem; margin-top:0.5rem;">
+          <h4 style="font-size:0.85rem; color:var(--accent-cyan); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+            <i data-lucide="lock" style="width:14px; height:14px;"></i> 
+            <span>Owner Contact (Encrypted - Never Shown to Scanners)</span>
+          </h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vehicle-owner-name-input">Owner Full Name</label>
+              <input type="text" id="vehicle-owner-name-input" class="form-control" placeholder="e.g. Rahul Sharma" required>
+            </div>
+            <div class="form-group">
+              <label for="vehicle-owner-phone-input">Owner Real Mobile (Encrypted Proxy)</label>
+              <input type="tel" id="vehicle-owner-phone-input" class="form-control" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="vehicle-parking-address-input">Permanent Parking Address / Society Location</label>
+            <input type="text" id="vehicle-parking-address-input" class="form-control" placeholder="e.g. Flat 402, Tower B, Godrej Woods, Sector 43">
+          </div>
+        </div>
+
+        <!-- Section 3: 2 Family Emergency Contacts (Direct Call Escalation) -->
+        <div style="border-top:1px solid var(--border-glass); padding-top:0.75rem; margin-top:0.5rem;">
+          <h4 style="font-size:0.85rem; color:var(--accent-rose); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+            <i data-lucide="siren" style="width:14px; height:14px;"></i> 
+            <span>2 Family Emergency Numbers (Called if Owner Does Not Answer)</span>
+          </h4>
+          
+          <!-- Family Member 1 -->
+          <div class="form-row" style="margin-bottom:0.5rem;">
+            <div class="form-group">
+              <label for="vehicle-fam1-name-input">Family Contact 1 (Name & Relation)</label>
+              <input type="text" id="vehicle-fam1-name-input" class="form-control" placeholder="e.g. Priya (Spouse)">
+            </div>
+            <div class="form-group">
+              <label for="vehicle-fam1-phone-input">Family Contact 1 Mobile Phone</label>
+              <input type="tel" id="vehicle-fam1-phone-input" class="form-control" placeholder="+91 98765 11111">
+            </div>
+          </div>
+
+          <!-- Family Member 2 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vehicle-fam2-name-input">Family Contact 2 (Name & Relation)</label>
+              <input type="text" id="vehicle-fam2-name-input" class="form-control" placeholder="e.g. R.K. Sharma (Father)">
+            </div>
+            <div class="form-group">
+              <label for="vehicle-fam2-phone-input">Family Contact 2 Mobile Phone</label>
+              <input type="tel" id="vehicle-fam2-phone-input" class="form-control" placeholder="+91 98765 22222">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Owner Quick Note -->
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label for="vehicle-note-input">Owner Quick Note for Scanners</label>
+          <textarea id="vehicle-note-input" class="form-control" rows="2" placeholder="e.g. Parked for 10 mins. If blocking or emergency, tap alert and I'll move immediately!"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="btn-cancel-vehicle">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Vehicle & Protect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD / EDIT FAMILY EMERGENCY CONTACT -->
+  <!-- ========================================================================= -->
+  <div id="modal-family" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-family-title"><i data-lucide="user-plus"></i> Add Emergency Family Contact</h3>
+        <button class="modal-close-btn" id="btn-close-family-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-family" class="modal-body">
+        <input type="hidden" id="family-id-input">
+        
+        <div class="form-group">
+          <label for="family-name-input">Full Name</label>
+          <input type="text" id="family-name-input" class="form-control" placeholder="e.g. Priya Sharma" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="family-relation-input">Relationship</label>
+            <select id="family-relation-input" class="form-control">
+              <option value="Spouse">Spouse / Partner</option>
+              <option value="Parent">Father / Mother</option>
+              <option value="Sibling">Brother / Sister</option>
+              <option value="Child">Son / Daughter</option>
+              <option value="Friend">Trusted Friend</option>
+              <option value="Doctor">Emergency Doctor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="family-phone-input">Mobile Phone (For SOS SMS/Call)</label>
+            <input type="tel" id="family-phone-input" class="form-control" placeholder="+91 98765 43210" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="family-sos-toggle" checked>
+            <span>Notify on Critical Accidents & SOS Broadcasts</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="family-parking-toggle">
+            <span>Also notify if vehicle is about to be towed</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="btn-cancel-family">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SMART CASCADE SOS CALL & REAL-TIME MULTI-PARTY DIALER -->
+  <!-- ========================================================================= -->
+  <div id="modal-call-sim" class="modal-overlay hidden">
+    <div class="call-dialog-card">
+      <div class="call-header">
+        <div class="secure-call-badge" id="call-modal-mode-badge">
+          <i data-lucide="shield-check"></i>
+          <span>Encrypted Proxy Call Relay</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-call-modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="call-body">
+        <!-- Main Call Avatar Pulse -->
+        <div class="call-avatar-pulse" id="call-avatar-indicator">
+          <i data-lucide="phone-call"></i>
+        </div>
+        
+        <h3 class="call-contact-title" id="call-main-title">Connecting to Vehicle Owner...</h3>
+        <p class="call-status-text" id="call-timer-status">Dialing Primary Vehicle Owner...</p>
+
+        <!-- Cascade Multi-Line Status Area -->
+        <div class="cascade-call-lines-box" id="cascade-lines-container">
+          <!-- Dynamically populated multi-party calling lines -->
+        </div>
+
+        <!-- Waveform Animation -->
+        <div class="audio-waveform" id="call-audio-waveform">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <!-- Auto-escalation manual trigger button -->
+        <div class="escalate-actions-bar" id="escalate-actions-bar">
+          <button type="button" class="btn btn-sm btn-outline-sos" id="btn-trigger-instant-family-call">
+            <i data-lucide="users"></i>
+            <span>No Answer? Ring All Family Members Now</span>
+          </button>
+        </div>
+
+        <!-- Chat messages inside call -->
+        <div class="mini-chat-stream" id="sim-chat-stream">
+          <div class="chat-bubble system">
+            <i data-lucide="lock"></i> End-to-end encrypted proxy session started.
+          </div>
+        </div>
+
+        <!-- Quick Chat Input during Call -->
+        <div class="mini-chat-input-row">
+          <input type="text" id="sim-chat-input" placeholder="Type urgent note to owner/family..." class="form-control">
+          <button class="btn btn-primary btn-sm" id="btn-sim-send-chat">
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="call-actions-footer">
+        <div class="call-footer-actions-row">
+          <button class="btn-call-end" id="btn-end-sim-call">
+            <i data-lucide="phone-off"></i>
+            <span>End Call</span>
+          </button>
+          <a href="tel:+919876543210" id="btn-real-phone-fallback" class="btn btn-sm btn-outline" style="border-radius: var(--radius-full);" title="Trigger real phone app dialer">
+            <i data-lucide="phone"></i> Real Cellular Call
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Main Script -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
