@@ -3796,4 +3796,364 @@ body.light-theme .moon-icon { display: none; }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE SYSTEM
+   Ultra-optimized for iOS, Android, and small viewports
+   ========================================================================== */
+
+/* Tablet & Smaller Laptops (<= 1024px) */
+@media screen and (max-width: 1024px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .scanner-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .studio-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .pricing-plans-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablets & Mobile Devices (<= 768px) */
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+
+  body {
+    padding-bottom: 2rem;
+  }
+
+  /* Header adjustments */
+  .app-header {
+    padding: 0.5rem 0.75rem;
+    position: sticky;
+    top: 0;
+  }
+
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* Navigation Tabs: Sleek Horizontal Scroll with touch snap */
+  .nav-tabs {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius-full);
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab {
+    scroll-snap-align: start;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    gap: 0.35rem;
+  }
+
+  .nav-tab .badge {
+    display: none; /* Hide non-essential badges on small nav to keep it clean */
+  }
+
+  .header-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    margin-left: 0;
+  }
+
+  .btn-outline-sos .btn-text {
+    display: none; /* Icon-only SOS button on mobile header */
+  }
+
+  .btn-outline-sos {
+    padding: 0.4rem 0.6rem;
+  }
+
+  /* App Content Padding */
+  .app-content {
+    padding: 0.85rem 0.65rem;
+  }
+
+  /* Hero Card */
+  .hero-card {
+    padding: 1.15rem 1rem;
+  }
+
+  .hero-title {
+    font-size: 1.15rem;
+  }
+
+  .hero-desc {
+    max-width: 100%;
+    font-size: 0.825rem;
+    margin-bottom: 1rem;
+  }
+
+  .status-pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .status-pill {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  /* Metric cards */
+  .metric-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+  }
+
+  .metric-card {
+    padding: 0.75rem;
+    gap: 0.65rem;
+  }
+
+  .metric-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+  }
+
+  .metric-value {
+    font-size: 1rem;
+  }
+
+  /* Scanner Phone Frame: Fluid on Mobile */
+  .phone-frame {
+    max-width: 100%;
+    border-radius: 24px;
+    padding: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .phone-notch {
+    display: none; /* Hide simulated notch on actual mobile screens */
+  }
+
+  .phone-screen {
+    border-radius: 20px;
+    padding: 1rem 0.75rem;
+    min-height: auto;
+  }
+
+  /* Emergency 3-Pillars */
+  .emergency-pillars-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+  }
+
+  .btn-pillar-ambulance,
+  .btn-pillar-police,
+  .btn-pillar-family {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .pillar-title {
+    font-size: 0.72rem;
+  }
+
+  .pillar-sub {
+    font-size: 0.58rem;
+  }
+
+  /* Sticker Studio on Mobile */
+  .physical-sticker {
+    width: 100% !important;
+    max-width: 300px;
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .sticker-stage {
+    padding: 1rem 0.5rem;
+  }
+
+  .qr-canvas-holder canvas, .qr-canvas-holder img {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  .studio-btn-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .studio-btn-row .btn {
+    width: 100%;
+  }
+
+  /* Family Cards */
+  .family-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem 1rem;
+  }
+
+  .family-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  /* Modals */
+  .modal-card {
+    max-width: 95vw;
+    margin: 0.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .modal-header {
+    padding: 1rem 1.15rem;
+  }
+
+  .modal-body {
+    padding: 1rem 1.15rem;
+  }
+
+  /* Forms and Controls */
+  .form-control, .custom-input-box {
+    font-size: 16px; /* Prevents auto-zoom in iOS Safari */
+  }
+}
+
+/* Small Smartphone Screens (<= 480px) */
+@media screen and (max-width: 480px) {
+  .logo-main-title {
+    font-size: 0.85rem;
+  }
+
+  .logo-badge-pill {
+    font-size: 0.55rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .brand-logo-badge {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .metric-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.68rem;
+  }
+
+  .metric-value {
+    font-size: 0.95rem;
+  }
+
+  .vehicle-card-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .vehicle-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .dual-actions-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .btn-masked-call, .btn-whatsapp {
+    width: 100%;
+  }
+
+  .sticker-promo-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sticker-mini-preview {
+    align-self: center;
+    margin-top: 0.5rem;
+  }
+
+  .alert-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .alert-quick-replies {
+    gap: 0.3rem;
+  }
+
+  .quick-reply-btn {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* Touch accessibility */
+  button, input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/* Extra Small Phones (<= 360px) */
+@media screen and (max-width: 360px) {
+  .metric-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .emergency-pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .btn-pillar-ambulance,
+  .btn-pillar-police,
+  .btn-pillar-family {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.6rem 0.75rem;
+  }
+}
+
+
 
