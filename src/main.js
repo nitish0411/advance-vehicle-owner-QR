@@ -746,10 +746,10 @@ class AutoGuardApp {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
 
     const targetPanel = document.getElementById(`view-${viewName}`);
-    const targetTab = document.getElementById(`tab-${viewName}`);
+    document.querySelectorAll(`.nav-tab[data-view="${viewName}"]`).forEach(t => t.classList.add('active'));
 
     if (targetPanel) targetPanel.classList.add('active');
-    if (targetTab) targetTab.classList.add('active');
+
 
     if (viewName === 'studio') {
       this.renderStickerStudio();

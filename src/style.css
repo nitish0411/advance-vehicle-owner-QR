@@ -3801,6 +3801,11 @@ body.light-theme .moon-icon { display: none; }
    Ultra-optimized for iOS, Android, and small viewports
    ========================================================================== */
 
+/* Modern Floating Mobile App Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: none;
+}
+
 /* Tablet & Smaller Laptops (<= 1024px) */
 @media screen and (max-width: 1024px) {
   .dashboard-hero {
@@ -3837,65 +3842,133 @@ body.light-theme .moon-icon { display: none; }
   }
 
   body {
-    padding-bottom: 2rem;
+    padding-bottom: 5.25rem; /* Space for the floating bottom navigation bar */
   }
 
-  /* Header adjustments */
+  /* Floating Bottom App Navigation Bar */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+    background: rgba(11, 15, 25, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.4rem 0.5rem;
+    padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  body.light-theme .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.25rem 0.4rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobile-nav-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+
+  .mob-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  .mob-icon-wrap i {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--text-primary);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mobile-nav-item.active .mob-icon-wrap {
+    background: var(--accent-blue);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    transform: translateY(-2px);
+  }
+
+  .mobile-nav-item.active span {
+    color: var(--accent-blue);
+    font-weight: 800;
+  }
+
+  .highlight-scanner {
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(6, 182, 212, 0.5);
+    animation: pulse-ring 2.5s infinite;
+  }
+
+  /* Header adjustments: Hide desktop tabs on mobile in favor of bottom nav */
+  .app-header .nav-tabs {
+    display: none;
+  }
+
   .app-header {
-    padding: 0.5rem 0.75rem;
+    padding: 0.65rem 0.85rem;
     position: sticky;
     top: 0;
   }
 
   .header-container {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.6rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
   .brand-group {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  /* Navigation Tabs: Sleek Horizontal Scroll with touch snap */
-  .nav-tabs {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    border-radius: var(--radius-full);
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .nav-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nav-tab {
-    scroll-snap-align: start;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.78rem;
-    gap: 0.35rem;
-  }
-
-  .nav-tab .badge {
-    display: none; /* Hide non-essential badges on small nav to keep it clean */
+    justify-content: flex-start;
   }
 
   .header-actions {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    margin-left: 0;
+    position: relative;
+    top: auto;
+    right: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .btn-outline-sos .btn-text {
@@ -4154,6 +4227,7 @@ body.light-theme .moon-icon { display: none; }
     padding: 0.6rem 0.75rem;
   }
 }
+
 
 
 
